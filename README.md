@@ -28,7 +28,7 @@ python setup.py
 
 4. Run the ComfyUI.
 
-5. Double click anywhere in ComfyUI and search DeepExtract node by typing it or right click anywhere and select `Add Node > DeepExtract > VocalAndSoundRemoverNode` node to using it.
+5. Double click anywhere in ComfyUI and search DeepExtract node by typing it or right click anywhere and select `Add Node > DeepExtract > VocalAndSoundSeparatorNode` node to using it.
 
 <img src="https://github.com/abdozmantar/ComfyUI-DeepExtract/blob/main/public/images/node_location.png?raw=true" alt="nodel location" width="100%"/>
 
