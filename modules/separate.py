@@ -77,14 +77,8 @@ class SeparateMDX(SeparateAttributes):
     def separate(self):
         samplerate = 44100
 
-        if self.mdx_segment_size == self.dim_t:
-            ort_ = onnxruntime.InferenceSession(
-                self.model_path, providers=self.run_type)
-            self.model_run = lambda spek: ort_.run(
-                None, {'input': spek.cpu().numpy()})[0]
-        else:
-            self.model_run = ConvertModel(load(self.model_path))
-            self.model_run.to(self.device).eval()
+        self.model_run = ConvertModel(load(self.model_path))
+        self.model_run.to(self.device).eval()
         
         mix = prepare_mix(self.audio_file)
 
