@@ -92,8 +92,12 @@ class SeparateMDX(SeparateAttributes):
         logger.info(mix.shape)
 
         vocals = self.demix(mix)
-
         background = mix - vocals
+
+        # Tempo düzeltmesi yapalım
+        original_length = mix.shape[-1]
+        vocals = fix_tempo(vocals, original_length)
+        background = fix_tempo(background, original_length)
 
 
         clear_gpu_cache()
@@ -180,6 +184,8 @@ class SeparateMDX(SeparateAttributes):
 
         return source
     
+   
+    
     def run_model(self, mix):
         spek = self.stft(mix.to(self.device))*self.adjust
         spek[:, :, :3, :] *= 0
@@ -187,3 +193,31 @@ class SeparateMDX(SeparateAttributes):
         spec_pred = self.model_run(spek)
 
         return self.stft.inverse(torch.tensor(spec_pred).to(self.device)).cpu().detach().numpy()
+    
+def fix_tempo(waveform: np.ndarray, original_length: int) -> np.ndarray:
+    """
+    Corrects the tempo of the separated audio after source separation.
+
+    Args:
+        waveform (np.ndarray): The separated waveform data (2, N).
+        original_length (int): The number of samples in the original mixed audio.
+
+    Returns:
+        np.ndarray: Tempo-corrected waveform.
+    """
+    # If the difference is very small, no correction is needed
+    if abs(waveform.shape[-1] - original_length) < 10:
+        return waveform
+
+    # Calculate the stretch rate
+    rate = waveform.shape[-1] / original_length
+
+    # Correct each channel separately
+    fixed_waveform = []
+    for ch in waveform:
+        ch_fixed = librosa.effects.time_stretch(ch, rate)
+        fixed_waveform.append(ch_fixed)
+    
+    # Cut to match the exact original length
+    fixed_waveform = np.stack(fixed_waveform)[:, :original_length]
+    return fixed_waveform
