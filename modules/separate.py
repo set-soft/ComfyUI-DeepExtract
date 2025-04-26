@@ -76,10 +76,8 @@ class SeparateMDX(SeparateAttributes):
     """Class to handle separation using MDX models."""
     def separate(self):
         samplerate = 44100
-
         self.model_run = ConvertModel(load(self.model_path))
         self.model_run.to(self.device).eval()
-        
         mix = prepare_mix(self.audio_file)
 
         logger.info(mix)
