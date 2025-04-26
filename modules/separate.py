@@ -88,7 +88,6 @@ class SeparateMDX(SeparateAttributes):
         vocals = self.demix(mix)
         background = mix - vocals
 
-        # Tempo düzeltmesi yapalım
         original_length = mix.shape[-1]
         vocals = fix_tempo(vocals, original_length)
         background = fix_tempo(background, original_length)
