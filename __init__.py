@@ -1,7 +1,5 @@
-
 import os
 import sys
-
 
 repo_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, repo_dir)
@@ -16,6 +14,6 @@ for module in modules_used:
     if module in sys.modules:
         original_webui_modules[module] = sys.modules.pop(module)
 
-from .nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
+from .nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS  # noqa:402
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
