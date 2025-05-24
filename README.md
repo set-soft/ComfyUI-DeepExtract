@@ -3,6 +3,7 @@
 ## Overview
 
 **DeepExtract** is a powerful and efficient tool designed to separate vocals and sounds from audio files, providing an enhanced experience for musicians, producers, and audio engineers. With DeepExtract, you can quickly and effectively isolate vocals or instruments from mixed audio tracks, facilitating tasks like remixing, karaoke preparation, or audio analysis.
+
 We use [MDX Net](https://arxiv.org/abs/2111.12203) models for this.
 
 ## Installation Guide &#x0001F6E0;&#xFE0F;
@@ -19,8 +20,10 @@ Setting up **DeepExtract** is quick and straightforward! Simply follow the steps
 
 ### Step 2: Model download
 
-You can use the auto-download feature. In this case you'll have just one model, it will be automatically downloaded the first time you run the node. The default node is the Kim Jensen Vocal 2 model, this is really good to extract the vocals.
+You can use the auto-download feature. In this case you'll have just one model, it will be automatically downloaded the first time you run the node. The default node is the Kimberley Jensen Vocal 2 model, this is really good to extract the vocals.
+
 If you want to play with more MDX Net models download them from internet and put them in the *audio/MDX* folder inside the ComfyUI *models* folder.
+
 You can find various models at [HuggingFace](https://huggingface.co/seanghay/uvr_models/tree/main). Some models are designed to extract the vocals and others the instruments. You can get the instruments using a model for vocals, just connect the complement output. But for optimal results use a model to extract what you want.
 
 ### Step 3: Install dependencies
@@ -90,7 +93,7 @@ We welcome contributions from the community! If you'd like to enhance DeepExtrac
 &#x0001F464; **Abdullah Ozmantar**  
 [GitHub Profile](https://github.com/comfyui-abdozmantar)
 
-Modifications: **Salvador E. Tropea**
+&#x0001F464; Modifications: **Salvador E. Tropea**  
 [GitHub Profile](https://github.com/set-soft)
 
 ## License
