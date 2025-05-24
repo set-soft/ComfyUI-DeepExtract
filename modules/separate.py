@@ -9,11 +9,13 @@ from onnx import load
 from onnx2pytorch import ConvertModel
 
 from .stft import STFT
+from .resample import resample_audio_numpy
 
 if TYPE_CHECKING:
     from scripts.vocal_and_sound_remover import ModelData
 
 logger = logging.getLogger(__name__)
+TARGET_SR = 44100
 
 
 class SeparateAttributes:
@@ -40,21 +42,41 @@ class SeparateMDX(SeparateAttributes):
         samplerate = 44100
         self.model_run = ConvertModel(load(self.model_path))
         self.model_run.to(self.device).eval()
-        mix = self.audio_data['waveform'].numpy()
+        mix = np.squeeze(self.audio_data['waveform'].numpy(), axis=0)
+        original_sr = self.audio_data['sample_rate']
 
-        batch_size, channels, original_length = mix.shape
-        logger.info(f"Channels: {channels} Samples: {original_length}")
+        channels, original_length = mix.shape
+        logger.info(f"Input audio: {channels} ch {original_length} samples @ {original_sr} Hz")
+
+        # Ensure 44.1 kHz SR
+        if original_sr != TARGET_SR:
+            mix = resample_audio_numpy(mix, original_sr, TARGET_SR)
+
+        # Ensure stereo
         back_to_mono = False
         if channels == 1:
-            mix = np.repeat(mix, 2, axis=1)
-            back_to_mono = True
             logger.info(f"Repeating channel to make fake stereo")
+            mix = np.repeat(mix, 2, axis=0)
+            back_to_mono = True
+
+        channels, adapted_length = mix.shape
+        logger.info(f"Audio to process {channels} ch {adapted_length} samples @ {TARGET_SR} Hz")
 
         main_audio = self.demix(mix)
-        complement_audio = mix.squeeze(0) - main_audio
+        complement_audio = mix - main_audio
 
-        main_audio = fix_tempo(main_audio, original_length)
-        complement_audio = fix_tempo(complement_audio, original_length)
+        # Do we need to convert to mono?
+        if back_to_mono:
+            main_audio = main_audio[0:1, :]
+            complement_audio = complement_audio[0:1, :]
+
+        # Do we need to resample?
+        if original_sr != TARGET_SR:
+            main_audio = resample_audio_numpy(main_audio, TARGET_SR, original_sr)
+            complement_audio = resample_audio_numpy(complement_audio, TARGET_SR, original_sr)
+
+        channels, final_length = main_audio.shape
+        logger.info(f"Result {channels} ch {final_length} samples @ {original_sr} Hz")
 
         # Clear GPU cache to free up memory
         gc.collect()
@@ -63,12 +85,8 @@ class SeparateMDX(SeparateAttributes):
         main_audio_tensor = torch.tensor(main_audio, dtype=torch.float32).unsqueeze(0)
         complement_audio_tensor = torch.tensor(complement_audio, dtype=torch.float32).unsqueeze(0)
 
-        if back_to_mono:
-            main_audio_tensor = main_audio_tensor[:, 0:1, :]
-            complement_audio_tensor = complement_audio_tensor[:, 0:1, :]
-
-        return ({'waveform': main_audio_tensor, 'sample_rate': samplerate},
-                {'waveform': complement_audio_tensor, 'sample_rate': samplerate})
+        return ({'waveform': main_audio_tensor, 'sample_rate': original_sr},
+                {'waveform': complement_audio_tensor, 'sample_rate': original_sr})
 
     def initialize_model_settings(self):
         """Initialize model settings for STFT and chunking."""
@@ -81,10 +99,6 @@ class SeparateMDX(SeparateAttributes):
     def demix(self, mix):
         """Demix the audio, separate the interesting thing (might be vocals, instruments, etc.)"""
         self.initialize_model_settings()
-
-        # Ensure mix is 2D
-        if mix.ndim == 3:
-            mix = np.squeeze(mix, axis=0)  # Remove the first dimension if it's 1
 
         tar_waves_ = []
         chunk_size = self.chunk_size
@@ -144,34 +158,3 @@ class SeparateMDX(SeparateAttributes):
         spec_pred = self.model_run(spek)
 
         return self.stft.inverse(torch.tensor(spec_pred).to(self.device)).cpu().detach().numpy()
-
-
-def fix_tempo(waveform: np.ndarray, original_length: int) -> np.ndarray:
-    """
-    Corrects the tempo of the separated audio after source separation.
-
-    Args:
-        waveform (np.ndarray): The separated waveform data (2, N).
-        original_length (int): The number of samples in the original mixed audio.
-
-    Returns:
-        np.ndarray: Tempo-corrected waveform.
-    """
-    # If the difference is very small, no correction is needed
-    if abs(waveform.shape[-1] - original_length) < 10:
-        return waveform
-
-    # Calculate the stretch rate
-    rate = waveform.shape[-1] / original_length
-
-    logger.info(f"Adjusting rate to {rate}")
-
-    # Correct each channel separately
-    fixed_waveform = []
-    for ch in waveform:
-        ch_fixed = librosa.effects.time_stretch(ch, rate)
-        fixed_waveform.append(ch_fixed)
-
-    # Cut to match the exact original length
-    fixed_waveform = np.stack(fixed_waveform)[:, :original_length]
-    return fixed_waveform
