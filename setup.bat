@@ -8,5 +8,5 @@ if not exist ..\..\..\python_embeded\python.exe (
 )
 
 :: Install the packages
-..\..\..\python_embeded\python.exe setup.py
+..\..\..\python_embeded\pip.exe install -r requirements.txt
 @pause
