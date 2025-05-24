@@ -1,13 +1,12 @@
+# Short-Time Fourier Transform (STFT).
 import torch
 
 
 class STFT:
-
     def __init__(self, n_fft, hop_length, dim_f, device):
         self.n_fft = n_fft
         self.hop_length = hop_length
-        self.window = torch.hann_window(
-            window_length=self.n_fft, periodic=True)
+        self.window = torch.hann_window(window_length=self.n_fft, periodic=True)
         self.dim_f = dim_f
         self.device = device
 
