@@ -42,9 +42,13 @@ class SeparateMDX(SeparateAttributes):
         self.model_run.to(self.device).eval()
         mix = self.audio_data['waveform'].numpy()
 
-        original_length = mix.shape[-1]
-        channels = mix.shape[-2]
+        batch_size, channels, original_length = mix.shape
         logger.info(f"Channels: {channels} Samples: {original_length}")
+        back_to_mono = False
+        if channels == 1:
+            mix = np.repeat(mix, 2, axis=1)
+            back_to_mono = True
+            logger.info(f"Repeating channel to make fake stereo")
 
         main_audio = self.demix(mix)
         complement_audio = mix.squeeze(0) - main_audio
@@ -58,6 +62,10 @@ class SeparateMDX(SeparateAttributes):
 
         main_audio_tensor = torch.tensor(main_audio, dtype=torch.float32).unsqueeze(0)
         complement_audio_tensor = torch.tensor(complement_audio, dtype=torch.float32).unsqueeze(0)
+
+        if back_to_mono:
+            main_audio_tensor = main_audio_tensor[:, 0:1, :]
+            complement_audio_tensor = complement_audio_tensor[:, 0:1, :]
 
         return ({'waveform': main_audio_tensor, 'sample_rate': samplerate},
                 {'waveform': complement_audio_tensor, 'sample_rate': samplerate})
