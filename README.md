@@ -1,10 +1,11 @@
-# DeepExtract 🎤
+# DeepExtract &#x0001F3A4;
 
 ## Overview
 
 **DeepExtract** is a powerful and efficient tool designed to separate vocals and sounds from audio files, providing an enhanced experience for musicians, producers, and audio engineers. With DeepExtract, you can quickly and effectively isolate vocals or instruments from mixed audio tracks, facilitating tasks like remixing, karaoke preparation, or audio analysis.
+We use [MDX Net](https://arxiv.org/abs/2111.12203) models for this.
 
-## Installation Guide 🛠️
+## Installation Guide &#x0001F6E0;&#xFE0F;
 
 Setting up **DeepExtract** is quick and straightforward! Simply follow the steps below to get started.
 
@@ -14,14 +15,20 @@ Setting up **DeepExtract** is quick and straightforward! Simply follow the steps
 
 - A) Download this repository as a zip file and extract files in to `comfyui\custom_nodes\ComfyUI-DeepExtract` folder.
 
-- B) Go to `comfyui\custom_nodes\` folder open a terminal window here and run `git clone https://github.com/abdozmantar/ComfyUI-DeepExtract` command.
+- B) Go to `comfyui\custom_nodes\` folder open a terminal window here and run `git clone https://github.com/set-soft/ComfyUI-DeepExtract` command.
 
-### Step 2: Run the Setup Script
+### Step 2: Model download
 
-2. Go to `comfyui\custom_nodes\ComfyUI-DeepExtract` folder and open a terminal window and run `python setup.py` command. If you using windows you can double click `setup.bat` alternatively.
+You can use the auto-download feature. In this case you'll have just one model, it will be automatically downloaded the first time you run the node. The default node is the Kim Jensen Vocal 2 model, this is really good to extract the vocals.
+If you want to play with more MDX Net models download them from internet and put them in the *audio/MDX* folder inside the ComfyUI *models* folder.
+You can find various models at [HuggingFace](https://huggingface.co/seanghay/uvr_models/tree/main). Some models are designed to extract the vocals and others the instruments. You can get the instruments using a model for vocals, just connect the complement output. But for optimal results use a model to extract what you want.
+
+### Step 3: Install dependencies
+
+2. Go to `comfyui\custom_nodes\ComfyUI-DeepExtract` folder and open a terminal window and run `pip install -r requirements.txt` command. If you using windows you can double click `setup.bat` alternatively.
 
 ```bash
-python setup.py
+pip install -r requirements.txt
 ```
 
 3. Wait patiently installation to finish.
@@ -30,11 +37,11 @@ python setup.py
 
 5. Double click anywhere in ComfyUI and search DeepExtract node by typing it or right click anywhere and select `Add Node > DeepExtract > VocalAndSoundSeparatorNode` node to using it.
 
-<img src="https://github.com/abdozmantar/ComfyUI-DeepExtract/blob/main/public/images/node_location.png?raw=true" alt="nodel location" width="100%"/>
+<img src="https://github.com/set-soft/ComfyUI-DeepExtract/blob/main/public/images/node_location.png?raw=true" alt="nodel location" width="100%"/>
 
 ##### OR
 
-<img src="https://github.com/abdozmantar/ComfyUI-DeepExtract/blob/main/public/images/node_search.png?raw=true" alt="nodel location" width="100%"/>
+<img src="https://github.com/set-soft/ComfyUI-DeepExtract/blob/main/public/images/node_search.png?raw=true" alt="nodel location" width="100%"/>
 
 ## Usage
 
@@ -51,7 +58,7 @@ To utilize the **DeepExtract** node, simply connect your audio input to the **Vo
 
 ## Structure
 
-<img src="https://github.com/abdozmantar/ComfyUI-DeepExtract/blob/main/public/images/node_structure.png?raw=true" alt="nodel location" width="100%"/>
+<img src="https://github.com/set-soft/ComfyUI-DeepExtract/blob/main/public/images/node_structure.png?raw=true" alt="nodel location" width="100%"/>
 
 ### Node Layout
 
@@ -60,8 +67,9 @@ The **DeepExtract** node features an intuitive interface that allows for easy ma
 ### Parameter Overview
 
 - **Input Sound:** This is where you connect the mixed audio file.
-- **Vocal Output:** This output provides the isolated vocal track.
-- **Background Output:** This output delivers the remaining instrumental sound.
+- **Main Output:** This output provides the isolated main track. The default is the vocals.
+- **Complement Output:** This output delivers the remaining sound. The default are instruments.
+- **model_filename:** When using *Default* the *Kim_Vocal_2.onnx* model is used. This model is downloaded if you don't have it installed. If you have other models in the *audio/MDX* folder you can select the model to use here.
 
 These additions, along with your original text, will create a clearer understanding of how to use the **DeepExtract** tool effectively!
 
@@ -79,9 +87,13 @@ We welcome contributions from the community! If you'd like to enhance DeepExtrac
 
 ### Author
 
-👤 **Abdullah Ozmantar**  
+&#x0001F464; **Abdullah Ozmantar**  
 [GitHub Profile](https://github.com/comfyui-abdozmantar)
+
+Modifications: **Salvador E. Tropea**
+[GitHub Profile](https://github.com/set-soft)
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/abdozmantar/comfyui-deepextract/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/set-soft/comfyui-deepextract/blob/main/LICENSE) file for details.
+
