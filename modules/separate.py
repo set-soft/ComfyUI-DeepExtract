@@ -3,11 +3,10 @@ from typing import TYPE_CHECKING
 import gc
 import logging
 import numpy as np
-import librosa   # Used only when we need to adjust the rate
 import torch
 from onnx import load
 from onnx2pytorch import ConvertModel
-from tqdm import tqdm # Import tqdm
+from tqdm import tqdm
 
 from .stft import STFT
 from .resample import resample_audio_numpy
@@ -40,7 +39,6 @@ class SeparateAttributes:
 class SeparateMDX(SeparateAttributes):
     """Class to handle separation using MDX models."""
     def separate(self):
-        samplerate = 44100
         self.model_run = ConvertModel(load(self.model_path))
         self.model_run.to(self.device).eval()
         mix = np.squeeze(self.audio_data['waveform'].numpy(), axis=0)
@@ -56,7 +54,7 @@ class SeparateMDX(SeparateAttributes):
         # Ensure stereo
         back_to_mono = False
         if channels == 1:
-            logger.info(f"Repeating channel to make fake stereo")
+            logger.info("Repeating channel to make fake stereo")
             mix = np.repeat(mix, 2, axis=0)
             back_to_mono = True
 
