@@ -52,6 +52,9 @@ pip install -r requirements.txt
 
 To utilize the **DeepExtract** node, simply connect your audio input to the **VocalAndSoundRemoverNode**. Adjust the parameters to tailor the output to your needs. The node will process the audio and return isolated vocal and background tracks for further manipulation.
 
+> [!TIP]
+> Models are trained using 44.1 kHz audio, to get optimal results use this sample rate
+
 ### Example Workflow
 
 1. **Load an Audio File:** Begin by loading your mixed audio file into ComfyUI.
