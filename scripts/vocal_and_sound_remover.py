@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class ModelData:
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str, segments: int):
         self.model_path = model_path
         self.model_basename = os.path.splitext(os.path.basename(model_path))[0]
         self.compensate = 1.009
@@ -17,7 +17,7 @@ class ModelData:
         self.mdx_dim_t_set = 8
         self.mdx_n_fft_scale_set = 6144
 
-        self.mdx_segment_size = 256
+        self.mdx_segment_size = 256 * segments
         self.mdx_batch_size = 1
 
         if not os.path.exists(self.model_path):
@@ -34,15 +34,16 @@ class ModelData:
 
 
 class VocalAndSoundRemover:
-    def __init__(self, input_data, model_path='Kim_Vocal_2.onnx'):
+    def __init__(self, input_data, segments, model_path='Kim_Vocal_2.onnx'):
         self.input_data = input_data
         self.model_path = model_path
+        self.segments = segments  # How many segments to process at once, bigger less overlap problems, but more memory
 
     def execute(self):
         try:
             logger.info("Starting vocal and sound separation process.")
 
-            model = ModelData(self.model_path)
+            model = ModelData(self.model_path, self.segments)
 
             logger.info("Model loaded successfully, starting separation.")
             separator = SeparateMDX(model, self.input_data)

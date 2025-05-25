@@ -41,6 +41,13 @@ class VocalAndSoundRemoverNode:
             "required": {
                 "input_sound": ("AUDIO",),
                 "model_filename": (cls._get_available_audio_models(), {"default": DEF_ENTRY}),  # Dropdown for model selection
+                "segments": ("INT", {
+                    "default": 1,        # Default value
+                    "min": 1,            # Minimum allowed value
+                    "max": 64,           # Maximum allowed value (set a reasonable practical max)
+                    "step": 1,           # Step for slider/spinbox
+                    "display": "slider"  # How to display: "number" or "slider"
+                }),
             }
         }
 
@@ -49,11 +56,11 @@ class VocalAndSoundRemoverNode:
     FUNCTION = "execute"
     CATEGORY = "DeepExtract"
 
-    def execute(self, input_sound, model_filename):
+    def execute(self, input_sound, model_filename, segments):
         if model_filename == DEF_ENTRY or model_filename is None:
             model_filename = DEF_MODEL
         model_path = os.path.join(folder_paths.models_dir, "audio", "MDX", model_filename)
-        demixer = VocalAndSoundRemover(input_sound, model_path)
+        demixer = VocalAndSoundRemover(input_sound, segments, model_path)
         main_audio, complement_audio = demixer.execute()
         return (main_audio, complement_audio,)
 
