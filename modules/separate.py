@@ -7,6 +7,7 @@ import torch
 from onnx import load
 from onnx2pytorch import ConvertModel
 from tqdm import tqdm
+from comfy.utils import ProgressBar
 
 from .stft import STFT
 from .resample import resample_audio_numpy
@@ -113,32 +114,32 @@ class SeparateMDX(SeparateAttributes):
         divider = np.zeros((1, 2, mixture.shape[-1]), dtype=np.float32)
         pbar_total = (mixture.shape[-1] - 1) // step + 1  # Number of loop executions
 
-        with tqdm(total=pbar_total, desc="Demixing Chunks") as pbar:
-            for i in range(0, mixture.shape[-1], step):
-                start = i
-                end = min(i + chunk_size, mixture.shape[-1])
-                chunk_size_actual = end - start
+        pbar = ProgressBar(pbar_total)
+        for i in tqdm(range(0, mixture.shape[-1], step)):
+            start = i
+            end = min(i + chunk_size, mixture.shape[-1])
+            chunk_size_actual = end - start
 
-                # Apply Hanning window
-                window = np.hanning(chunk_size_actual)
-                window = np.tile(window[None, None, :], (1, 2, 1))
+            # Apply Hanning window
+            window = np.hanning(chunk_size_actual)
+            window = np.tile(window[None, None, :], (1, 2, 1))
 
-                mix_part_ = mixture[:, start:end]
-                if end != i + chunk_size:
-                    pad_size = (i + chunk_size) - end
-                    mix_part_ = np.concatenate((mix_part_, np.zeros((2, pad_size), dtype='float32')), axis=-1)
+            mix_part_ = mixture[:, start:end]
+            if end != i + chunk_size:
+                pad_size = (i + chunk_size) - end
+                mix_part_ = np.concatenate((mix_part_, np.zeros((2, pad_size), dtype='float32')), axis=-1)
 
-                mix_part = torch.tensor(mix_part_, dtype=torch.float32).unsqueeze(0).to(self.device)
-                mix_waves = mix_part.split(self.mdx_batch_size)
+            mix_part = torch.tensor(mix_part_, dtype=torch.float32).unsqueeze(0).to(self.device)
+            mix_waves = mix_part.split(self.mdx_batch_size)
 
-                with torch.no_grad():
-                    for mix_wave in mix_waves:
-                        tar_waves = self.run_model(mix_wave)
-                        tar_waves[..., :chunk_size_actual] *= window
-                        divider[..., start:end] += window
-                        result[..., start:end] += tar_waves[..., :end - start]
+            with torch.no_grad():
+                for mix_wave in mix_waves:
+                    tar_waves = self.run_model(mix_wave)
+                    tar_waves[..., :chunk_size_actual] *= window
+                    divider[..., start:end] += window
+                    result[..., start:end] += tar_waves[..., :end - start]
 
-                pbar.update(1)  # Update progress bar by one iteration
+            pbar.update(1)  # Update progress bar by one iteration
 
         # Normalize the output
         epsilon = 1e-8  # Prevent division by zero
